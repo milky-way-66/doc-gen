@@ -185,6 +185,8 @@ Wait for synthesis completion. Mark step `1.1` `[x]` in `progress.md`.
 >
 > Search `<source_path>` for all user-facing screens, pages, views, and routes. Look in: `pages/`, `views/`, `screens/`, `app/` (Next.js / Nuxt app-router), `src/routes/`, top-level `components/`, router config files (react-router, vue-router, angular routes, flutter routes).
 >
+> **CRITICAL: You must list EVERY SINGLE screen found in the codebase. Do not truncate the list, summarize, or stop after a few examples.**
+>
 > For each screen record: a short ID (S-01, S-02...), name, route/path, what area it belongs to (auth, dashboard, settings, admin, etc.), and one-sentence purpose. Note the routing approach and any route guards.
 >
 > Write to `<output_path>/_work/analysis/01-screens.md` following the schema in `<investigator_root>/schemas/analysis-screens.md`.
@@ -195,6 +197,8 @@ Wait for synthesis completion. Mark step `1.1` `[x]` in `progress.md`.
 >
 > Search `<source_path>` for all API endpoints. Look in: `routes/`, `controllers/`, `api/`, `handlers/`, `resolvers/`, OpenAPI/Swagger spec files (openapi.yaml, swagger.json), gRPC proto files.
 >
+> **CRITICAL: You must list EVERY SINGLE API endpoint found in the codebase. Do not truncate the list, summarize, or stop after a few examples.**
+>
 > For each endpoint record: method (GET/POST/etc.), path, feature area, whether auth is required, and one-sentence purpose. Note the base URL pattern, auth mechanism (JWT, session, API key, OAuth), and response format conventions.
 >
 > Write to `<output_path>/_work/analysis/02-apis.md` following the schema in `<investigator_root>/schemas/analysis-apis.md`.
@@ -204,6 +208,8 @@ Wait for synthesis completion. Mark step `1.1` `[x]` in `progress.md`.
 > Read `<output_path>/_work/analysis/00-architecture.md`.
 >
 > Search `<source_path>` for all data models, entities, and schemas. Look in: `models/`, `entities/`, `migrations/`, `prisma/schema.prisma`, `*.sql` migration files, TypeORM entities, Mongoose schemas, SQLAlchemy models, ActiveRecord models.
+>
+> **CRITICAL: You must list EVERY SINGLE database entity found in the codebase. Do not truncate the list, summarize, or stop after a few examples.**
 >
 > For each entity record: name, table/collection name, one-sentence purpose, key fields (name + type), and relationships (hasMany, belongsTo, manyToMany). Note the DBMS, ORM, and any data patterns (soft delete, audit timestamps, UUID vs. integer PKs).
 >
@@ -222,6 +228,8 @@ Spawn one **general-purpose** sub-agent:
 > Read all four files in `<output_path>/_work/analysis/`: `00-architecture.md`, `01-screens.md`, `02-apis.md`, `03-database.md`.
 >
 > Group screens, APIs, and entities into logical **features** — business capabilities that a user or actor can exercise. Examples: "User Authentication", "Product Catalog", "Order Management", "Admin Dashboard".
+>
+> **CRITICAL:** Ensure every single screen, API, and entity discovered in the previous steps is assigned to at least one feature. Do not leave any orphans behind.
 >
 > For each feature define:
 > - **ID**: F-01, F-02... (stable, never reuse)
