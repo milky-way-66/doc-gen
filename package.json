@@ -1,6 +1,6 @@
 {
   "name": "gen-doc-skill",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Install gen-doc AI skill into your project",
   "bin": {
     "install-gen-doc": "bin/index.js"
