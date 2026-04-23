@@ -1,4 +1,4 @@
-# doc-generator
+# doc-writer
 
 An AI-powered technical documentation generator skill for your IDE (Cursor / Claude). It automatically analyzes your source code repository and generates a Software Requirements Specification (SRS) and Basic Design documents using a three-phase pipeline with parallel sub-agents.
 
@@ -7,10 +7,10 @@ An AI-powered technical documentation generator skill for your IDE (Cursor / Cla
 You can install the package globally using npm:
 
 ```bash
-npm install -g doc-generator
+npm install -g doc-writer
 ```
 
-*(Alternatively, you can run it directly without installing via `npx doc-generator init`)*
+*(Alternatively, you can run it directly without installing via `npx doc-writer init`)*
 
 ## 🛠️ Setup & Quick Start Guideline
 
@@ -21,7 +21,7 @@ Navigate to your project directory in your terminal and run the installer:
 
 ```bash
 cd /path/to/your/project
-npx doc-generator init
+npx doc-writer init
 ```
 *Note: This creates `.cursor`, `.claude`, and `.source-investigator` hidden folders containing the AI prompts and templates.*
 
