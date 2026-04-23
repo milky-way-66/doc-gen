@@ -1,0 +1,34 @@
+{
+  "name": "gen-doc-skill",
+  "version": "1.0.0",
+  "description": "Install gen-doc AI skill into your project",
+  "bin": {
+    "install-gen-doc": "bin/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "bin",
+    ".cursor",
+    ".claude",
+    ".source-investigator"
+  ],
+  "keywords": [
+    "cursor",
+    "claude",
+    "skill",
+    "gen-doc"
+  ],
+  "author": "",
+  "license": "ISC",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/milky-way-66/doc-gen.git"
+  },
+  "bugs": {
+    "url": "https://github.com/milky-way-66/doc-gen/issues"
+  },
+  "homepage": "https://github.com/milky-way-66/doc-gen#readme"
+}
