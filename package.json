@@ -1,6 +1,6 @@
 {
   "name": "doc-writer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Install doc-writer AI skill into your project",
   "bin": {
     "doc-writer": "bin/index.js"
