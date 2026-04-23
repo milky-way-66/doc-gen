@@ -2,8 +2,29 @@
 
 const fs = require('fs');
 const path = require('path');
+const readline = require('readline');
 
-const targetDir = process.cwd();
+const args = process.argv.slice(2);
+const command = args[0];
+let targetDirArg = '.';
+
+if (command === 'init') {
+  targetDirArg = args[1] || '.';
+} else if (command === '--help' || command === '-h') {
+  console.log(`
+Usage: gen-doc init [target-directory]
+
+Options:
+  init       Install the AI skill into the target directory (default: current directory)
+  --help     Show this help message
+  `);
+  process.exit(0);
+} else {
+  // If no init command but arguments provided, assume the first argument is the target directory for backward compatibility
+  targetDirArg = args[0] || '.';
+}
+
+const targetDir = path.resolve(process.cwd(), targetDirArg);
 const packageDir = path.join(__dirname, '..');
 
 const directoriesToCopy = [
@@ -39,16 +60,43 @@ function copyFolderRecursiveSync(source, target) {
   });
 }
 
-console.log('Installing gen-doc skills into your project...');
+function doCopy() {
+  console.log(`\nInstalling gen-doc skills into ${targetDir}...`);
+  
+  directoriesToCopy.forEach(dir => {
+    const sourceDir = path.join(packageDir, dir);
+    const destinationDir = path.join(targetDir, dir);
 
-directoriesToCopy.forEach(dir => {
-  const sourceDir = path.join(packageDir, dir);
-  const destinationDir = path.join(targetDir, dir);
+    if (fs.existsSync(sourceDir)) {
+      console.log(`Copying ${dir}...`);
+      copyFolderRecursiveSync(sourceDir, destinationDir);
+    }
+  });
+  
+  console.log('\n✅ Installation complete! You can now use the gen-doc skill in your IDE.');
+}
 
-  if (fs.existsSync(sourceDir)) {
-    console.log(`Copying ${dir}...`);
-    copyFolderRecursiveSync(sourceDir, destinationDir);
-  }
-});
+// Check for existing directories
+const existingDirs = directoriesToCopy.filter(dir => fs.existsSync(path.join(targetDir, dir)));
 
-console.log('✅ Installation complete! You can now use the gen-doc skill in your IDE.');
+if (existingDirs.length > 0) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  console.log(`\n⚠️  The following directories already exist in the target path:`);
+  existingDirs.forEach(d => console.log(`   - ${d}`));
+  console.log(`\nOverwriting may destroy custom templates or settings you have modified.`);
+  
+  rl.question('Are you sure you want to overwrite them? (y/N) ', (answer) => {
+    if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
+      doCopy();
+    } else {
+      console.log('\nInstallation cancelled. No files were modified.');
+    }
+    rl.close();
+  });
+} else {
+  doCopy();
+}

@@ -1,4 +1,4 @@
-# gen-doc-skill
+# gen-doc
 
 An AI-powered technical documentation generator skill for your IDE (Cursor / Claude). It automatically analyzes your source code repository and generates a Software Requirements Specification (SRS) and Basic Design documents using a three-phase pipeline with parallel sub-agents.
 
@@ -7,26 +7,40 @@ An AI-powered technical documentation generator skill for your IDE (Cursor / Cla
 You can install the package globally using npm:
 
 ```bash
-npm install -g gen-doc-skill
+npm install -g gen-doc
 ```
 
-*(Alternatively, you can run it directly without installing via `npx gen-doc-skill`)*
+*(Alternatively, you can run it directly without installing via `npx gen-doc init`)*
 
-## Setup in Your Project
+## 🛠️ Setup & Quick Start Guideline
 
-To add the `gen-doc` skill to your current project, navigate to your project directory in your terminal and run:
+Follow these steps to generate documentation for any project using Cursor or Claude.
+
+### Step 1: Initialize the Skill
+Navigate to your project directory in your terminal and run the installer:
 
 ```bash
-install-gen-doc
+cd /path/to/your/project
+npx gen-doc init
 ```
+*Note: This creates `.cursor`, `.claude`, and `.source-investigator` hidden folders containing the AI prompts and templates.*
 
-This command will copy the necessary `.cursor`, `.claude`, and `.source-investigator` folders into your project workspace.
+### Step 2: Open Your AI IDE
+Open the project directory in your compatible IDE (Cursor or Claude Desktop).
 
-## Usage
+### Step 3: Trigger the Documentation Generation
+Open the AI chat window (e.g., `Cmd+L` in Cursor) and invoke the skill by typing:
 
-Once installed, open your project in your compatible IDE (Cursor or Claude).
+```text
+/gen-doc ./src
+```
+*(Replace `./src` with the actual path to your source code folder. If you forget to provide a path, the AI will nicely remind you!)*
 
-You can trigger the skill from your AI chat interface using the following commands:
+---
+
+## 💻 Advanced Commands
+
+If you want more control over the generation pipeline, you can run specific phases:
 
 ```text
 /gen-doc <source_path>                    # Run the full pipeline (default)
@@ -39,6 +53,7 @@ You can trigger the skill from your AI chat interface using the following comman
 **Options:**
 - `--output <path>`: Specify an output directory (default is `./docs/<project-name>`)
 - `--force`: Re-run the requested phase even if it is already complete
+- `--type <auto|modern|legacy>`: Specify the architecture type (default: `auto`). If `auto`, the AI will detect if the codebase is modern or legacy during the analysis phase and adapt its strategy automatically.
 
 ### Phases Breakdown
 
