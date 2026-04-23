@@ -12,7 +12,7 @@ if (command === 'init') {
   targetDirArg = args[1] || '.';
 } else if (command === '--help' || command === '-h') {
   console.log(`
-Usage: gen-doc init [target-directory]
+Usage: doc-generator init [target-directory]
 
 Options:
   init       Install the AI skill into the target directory (default: current directory)
@@ -61,7 +61,7 @@ function copyFolderRecursiveSync(source, target) {
 }
 
 function doCopy() {
-  console.log(`\nInstalling gen-doc skills into ${targetDir}...`);
+  console.log(`\nInstalling doc-generator skills into ${targetDir}...`);
   
   directoriesToCopy.forEach(dir => {
     const sourceDir = path.join(packageDir, dir);
@@ -73,7 +73,7 @@ function doCopy() {
     }
   });
   
-  console.log('\n✅ Installation complete! You can now use the gen-doc skill in your IDE.');
+  console.log('\n✅ Installation complete! You can now use the doc-generator skill in your IDE.');
 }
 
 // Check for existing directories

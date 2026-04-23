@@ -1,9 +1,9 @@
 {
-  "name": "gen-doc",
+  "name": "doc-generator",
   "version": "1.0.3",
-  "description": "Install gen-doc AI skill into your project",
+  "description": "Install doc-generator AI skill into your project",
   "bin": {
-    "gen-doc": "bin/index.js"
+    "doc-generator": "bin/index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,7 +18,7 @@
     "cursor",
     "claude",
     "skill",
-    "gen-doc"
+    "doc-generator"
   ],
   "author": "",
   "license": "ISC",
