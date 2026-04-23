@@ -102,13 +102,40 @@ Parse `$ARGUMENTS` to extract:
 
 **Principle:** general before specific. Understand the whole system before any single feature. Map relationships before detailing individual items.
 
+### Parallel Subagent Execution Contract
+
+When a step says "parallel", execute multiple subagents concurrently:
+
+- Default behavior: if work items are independent (no data dependency), run multi-agent in parallel automatically.
+- Launch all independent subagents in one assistant action using multiple `Subagent` tool calls.
+- Do not run the second/third/fourth agent only after waiting for the first.
+- Partition work by concern or feature area so each subagent owns a distinct slice.
+- Enforce **one agent = one part**. Each agent must have exactly one primary focus area.
+- After parallel agents finish, run one synthesis pass (or direct file merge) to remove overlap and normalize terminology.
+- For very large repos, cap each wave at **max 8 parallel subagents**; continue in additional waves if needed.
+
+Focus examples:
+- `Architecture agent` -> architecture only (layers, boundaries, runtime topology)
+- `Screen discovery agent` -> screens/routes only
+- `API discovery agent` -> endpoints/contracts only
+- `Database discovery agent` -> entities/schema only
+
+Output ownership rules:
+- Every parallel agent writes to a unique output file (or unique feature-specific file path).
+- Do not let two agents write the same file at the same time.
+- If an agent discovers data outside its scope, it records a short note in "handoff notes" and continues its own scope.
+
 ---
 
-### Step 1.1 — Architecture Overview (serial)
+### Step 1.1 — Architecture Overview (parallel + synthesize)
 
 **Skip if** step `1.1` is `[x]`.
 
-Spawn one **Explore** sub-agent with this exact task:
+Before launching agents, ensure `<output_path>/_work/analysis/_partials/` exists.
+
+Spawn three **Explore** sub-agents in parallel:
+
+**Agent 1.1a — Project Intent & Tooling**:
 
 > Read the source code at `<source_path>`. Examine in order: all README files (root and sub-dirs), package manifests (package.json, requirements.txt, go.mod, Cargo.toml, pom.xml, build.gradle, pubspec.yaml — whichever exist), top-level directory listing (one level deep), Dockerfile and docker-compose files, CI config (.github/workflows/, .gitlab-ci.yml), environment example files (.env.example, config/).
 >
@@ -116,13 +143,35 @@ Spawn one **Explore** sub-agent with this exact task:
 > - Project name and one-paragraph purpose
 > - Programming language(s) and primary framework(s)
 > - Project type: web-app / REST API / mobile / CLI / library / monorepo
-> - Architectural layers: which directories map to frontend, backend, database, infrastructure, workers, etc.
+>
+> Write findings to `<output_path>/_work/analysis/_partials/00-architecture-intent.md`.
+
+**Agent 1.1b — Architecture (Layers & Runtime Topology)**:
+
+> Read `<source_path>` and focus on top-level directories and runtime boundaries. Map architectural layers: frontend, backend, database, infrastructure, workers, shared libs, and scripts/tooling. Identify how components communicate (HTTP, events, queues, direct DB access, RPC).
+>
+> Write findings to `<output_path>/_work/analysis/_partials/00-architecture-layers.md`.
+
+**Agent 1.1c — Integrations & Cross-Cutting Patterns**:
+
+> Read `<source_path>` and focus on external integrations and cross-cutting concerns (auth, logging, monitoring, config loading, background jobs, caching, messaging).
+>
+> Identify and document:
 > - External service integrations: payment gateways, auth providers, storage, email, maps, queues, etc.
 > - Notable architectural patterns: monolith, microservices, BFF, event-driven, etc.
 >
-> Write findings to `<output_path>/_work/analysis/00-architecture.md` following the schema in `<investigator_root>/schemas/analysis-architecture.md`.
+> Write findings to `<output_path>/_work/analysis/_partials/00-architecture-patterns.md`.
 
-Wait for completion. Mark step `1.1` `[x]` in `progress.md`.
+After all three complete, spawn one **general-purpose** synthesis sub-agent:
+
+> Read these partial files:
+> - `<output_path>/_work/analysis/_partials/00-architecture-intent.md`
+> - `<output_path>/_work/analysis/_partials/00-architecture-layers.md`
+> - `<output_path>/_work/analysis/_partials/00-architecture-patterns.md`
+>
+> Merge and normalize them into `<output_path>/_work/analysis/00-architecture.md` following `<investigator_root>/schemas/analysis-architecture.md`. Remove duplicates and keep only evidence-backed statements.
+
+Wait for synthesis completion. Mark step `1.1` `[x]` in `progress.md`.
 
 ---
 
@@ -205,7 +254,7 @@ Wait for completion. Mark step `1.3` `[x]`.
 
 Read `<output_path>/_work/analysis/04-features.md` to get features and batches.
 
-**For each batch (process batches in order):** spawn one **Explore** sub-agent **per feature** in that batch simultaneously. Wait for the full batch to complete before starting the next batch.
+**For each batch (process batches in order):** spawn one **Explore** sub-agent **per feature** in that batch simultaneously (single assistant action with multiple subagent calls). Wait for the full batch to complete before starting the next batch.
 
 Each sub-agent receives this task (fill in the feature-specific values):
 
@@ -274,7 +323,7 @@ Wait for completion. Mark `2.1` `[x]`.
 
 ### Step 2.2 — Core Sections (parallel)
 
-**Skip steps already `[x]`.** Spawn remaining agents in parallel.
+**Skip steps already `[x]`.** Spawn remaining agents in parallel in one assistant action (multiple subagent calls).
 
 **Agent 2.2a — Use Cases** *(skip if `[x]`)*:
 > Using feature deep dives in `<output_path>/_work/analysis/features/` and `01-screens.md`, generate the use case index at `<output_path>/srs/03-use-cases.md` and one detail file per use case at `<output_path>/srs/03-use-cases/uc-XX-<slug>.md`.
@@ -310,7 +359,7 @@ Wait for all. Mark completed steps `[x]`.
 
 ### Step 2.3 — Quality & Supplemental Sections (parallel)
 
-**Skip steps already `[x]`.** Spawn remaining agents in parallel.
+**Skip steps already `[x]`.** Spawn remaining agents in parallel in one assistant action (multiple subagent calls).
 
 **Agent 2.3a — Quality Attributes** *(skip if `[x]`)*:
 > Infer non-functional requirements from the codebase: caching → performance, rate limiting → scalability, auth guards → security, test coverage → maintainability, retry logic → reliability.
@@ -344,7 +393,7 @@ Wait for all. Mark `[x]`.
 
 ### Step 3.1 — Screen Map & API List (parallel)
 
-**Skip steps already `[x]`.**
+**Skip steps already `[x]`.** Launch both agents in one assistant action (multiple subagent calls).
 
 **Agent 3.1a — Screen Map** *(skip if `[x]`)*:
 > Using `<output_path>/srs/03-use-cases/`, `<output_path>/srs/06-external-interfaces.md`, and `<output_path>/_work/analysis/01-screens.md`, generate `<output_path>/basic-design/screen-map.md`.
@@ -370,7 +419,7 @@ Wait for both. Mark `[x]`.
 
 **Screen Details** *(skip if `3.2a` is `[x]`)*:
 
-Read `<output_path>/basic-design/screen-map.md` and `<output_path>/_work/analysis/04-features.md`. Group screens by feature. Spawn one **general-purpose** sub-agent per feature (max 5 in parallel; if more than 5 features, process in batches of 5).
+Read `<output_path>/basic-design/screen-map.md` and `<output_path>/_work/analysis/04-features.md`. Group screens by feature. Spawn one **general-purpose** sub-agent per feature (max 5 in parallel per wave; if more than 5 features, process in additional waves).
 
 Each screen-detail agent task:
 > For feature `<F-XX>`, generate detail files for each of its screens at `<output_path>/basic-design/screens/<feature-slug>/screen-<screen-slug>.md`.
@@ -381,7 +430,7 @@ Each screen-detail agent task:
 
 **API Details** *(skip if `3.2b` is `[x]`)*:
 
-Similarly, group endpoints by feature. Spawn one sub-agent per feature (max 5 parallel).
+Similarly, group endpoints by feature. Spawn one sub-agent per feature (max 5 parallel per wave).
 
 Each API-detail agent task:
 > For feature `<F-XX>`, generate detail files for each of its endpoints at `<output_path>/basic-design/apis/<feature-slug>/api-<method>-<slug>.md`.
