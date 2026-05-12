@@ -1,6 +1,14 @@
 # doc-writer
 
-An AI-powered technical documentation generator skill for your IDE (Cursor / Claude). It automatically analyzes your source code repository and generates a Software Requirements Specification (SRS) and Basic Design documents using a three-phase pipeline with parallel sub-agents.
+An AI-powered technical documentation generator skill for your IDE (Cursor / Claude). It analyzes your repository using a **graph-first** pipeline: **GitNexus** and **Graphify** are indexed into a frozen snapshot under `docs/.../_work/graph/`, analysis views are written with graph evidence, then **SRS** and **Basic Design** documents are generated following the machine-defined DAG in [`.source-investigator/document-dependencies.yaml`](.source-investigator/document-dependencies.yaml). Parallel sub-agents are used where the DAG and phase files allow.
+
+## Prerequisites (target repo)
+
+| Tool | Role |
+|------|------|
+| **Git** | `source_path` must live inside a git work tree (for commit SHA + `git rev-parse --show-toplevel`). |
+| **GitNexus** | `npx gitnexus analyze` at repo root (optional if you use `--graph-backend graphify` only). MCP is optional; a mirror under `_work/graph/gitnexus/` supports offline phases. |
+| **Graphify** | Python CLI per [Graphify](https://github.com/safishamsi/graphify) (optional if you use `--graph-backend gitnexus` only). |
 
 ## Installation
 
@@ -12,59 +20,66 @@ npm install -g doc-writer
 
 *(Alternatively, you can run it directly without installing via `npx doc-writer init`)*
 
-## 🛠️ Setup & Quick Start Guideline
+## Setup and quick start
 
-Follow these steps to generate documentation for any project using Cursor or Claude.
+### Step 1: Initialize the skill
 
-### Step 1: Initialize the Skill
 Navigate to your project directory in your terminal and run the installer:
 
 ```bash
 cd /path/to/your/project
 npx doc-writer init
 ```
-*Note: This creates `.cursor`, `.claude`, and `.source-investigator` hidden folders containing the AI prompts and templates.*
 
-### Step 2: Open Your AI IDE
-Open the project directory in your compatible IDE (Cursor or Claude Desktop).
+*This copies `.cursor`, `.claude`, and `.source-investigator` (skills, phases, schemas, and `document-dependencies.yaml`) into your project.*
 
-### Step 3: Trigger the Documentation Generation
-Open the AI chat window (e.g., `Cmd+L` in Cursor) and invoke the skill by typing:
+### Step 2: Open your AI IDE
+
+Open the project directory in Cursor or Claude.
+
+### Step 3: Generate documentation
+
+In chat, use one primary command (path = folder to analyze):
 
 ```text
 /gen-doc ./src
 ```
-*(Replace `./src` with the actual path to your source code folder. If you forget to provide a path, the AI will nicely remind you!)*
+
+*(Replace `./src` with the path you want documented. If you omit the path, the skill will ask for it.)*
 
 ---
 
-## 💻 Advanced Commands
-
-If you want more control over the generation pipeline, you can run specific phases:
+## Advanced commands
 
 ```text
-/gen-doc <source_path>                    # Run the full pipeline (default)
-/gen-doc all <source_path>                # Run the full pipeline (explicit)
-/gen-doc analyze <source_path>            # Phase 1 only: analyze source code
-/gen-doc srs <source_path>               # Phase 2 only: generate SRS
-/gen-doc design <source_path>            # Phase 3 only: generate Basic Design
+/gen-doc <source_path>                     # Full pipeline: Phase 0–3 (default)
+/gen-doc all <source_path>                 # Same, explicit
+/gen-doc analyze <source_path>             # Phase 0 + Phase 1 only
+/gen-doc srs <source_path>                 # Phase 2 only (requires completed analysis)
+/gen-doc design <source_path>              # Phase 3 only (requires completed SRS)
 ```
 
-**Options:**
-- `--output <path>`: Specify an output directory (default is `./docs/<project-name>`)
-- `--force`: Re-run the requested phase even if it is already complete
-- `--type <auto|modern|legacy>`: Specify the architecture type (default: `auto`). If `auto`, the AI will detect if the codebase is modern or legacy during the analysis phase and adapt its strategy automatically.
+**Options**
 
-### Phases Breakdown
+- `--output <path>` — Output root (default: `./docs/<folder-name>`).
+- `--force` — Re-run the requested phase; `analyze` + `--force` resets **Phase 0 and Phase 1**.
+- `--skip-graph-refresh` — Skip `npx gitnexus analyze` and Graphify rebuild; requires an existing `_work/graph/manifest.json` under the output tree.
+- `--graph-backend both|gitnexus|graphify` — Default `both`. Skipped backends are stubbed in the manifest and noted under **Gaps & Assumptions**.
+- `--type <auto|modern|legacy>` — Still honored by the router when you add it; architecture detection defaults to **auto** via `/gen-doc`.
 
-1. **Phase 1: Source Analysis (Bottom-Up)**
-   Analyzes the architecture, discovers all screens, APIs, and database entities, and maps them to high-level features.
-2. **Phase 2: SRS Generation**
-   Generates a comprehensive Software Requirements Specification based on the analysis.
-3. **Phase 3: Basic Design Generation**
-   Produces detailed screen maps, API lists, database schemas, and detail documents for each component.
+### Phases (high level)
 
-Progress is automatically saved to disk. If the process is interrupted, you can safely resume it later!
+0. **Graph index** — GitNexus analyze, Graphify export, `manifest.json` (graph identity for the run).
+1. **Source analysis** — Architecture, screens, APIs, entities, workers, **module dependencies**, features, deep dives (graph-evidenced where possible).
+2. **SRS** — Requirements aligned to analysis + graph traceability.
+3. **Basic design** — Screen/API/DB design from SRS + analysis.
+
+Progress is stored in `<output>/_work/progress.md`. You can resume after interruption.
+
+### Contracts for contributors
+
+- **Graph evidence:** [`.source-investigator/schemas/graph-evidence.md`](.source-investigator/schemas/graph-evidence.md)
+- **Document DAG:** [`.source-investigator/document-dependencies.yaml`](.source-investigator/document-dependencies.yaml)
 
 ## License
 

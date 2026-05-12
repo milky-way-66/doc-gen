@@ -7,16 +7,17 @@
 - `{template_path}` — absolute path to `.source-investigator/templates/`
 
 **Skip entire phase if** all Phase 2 steps are `[x]` in progress.md (unless `--force`).
-**Prerequisite:** All Phase 1 steps must be `[x]`. If not, stop and tell the user to run analysis first.
+**Prerequisite:** All Phase 1 steps must be `[x]`. If progress.md includes Phase 0, all Phase 0 steps must be `[x]`. If not, stop and tell the user to run analysis first.
 
-**Golden rule:** Only document what is evidenced in the source code and analysis.
-Do not invent requirements. When something cannot be determined, write:
+**Golden rule:** Only document what is evidenced in the **frozen graph snapshot** (`{output_path}/_work/graph/manifest.json` and referenced artifacts), **materialized analysis** under `{output_path}/_work/analysis/`, or verifiable source reads. Do not invent requirements. When something cannot be determined, write:
 `**TBD** — Could not be determined from source code. Requires stakeholder input.`
-and add the gap to `{output_path}/_work/progress.md` under "Gaps & Assumptions".
+and add the gap to `{output_path}/_work/progress.md` under "Gaps & Assumptions". If the graph was stale, skipped, or unavailable, say so in gaps.
+
+**Document DAG:** Load `{investigator_root}/document-dependencies.yaml`. Steps **2.2a–2.2d** may run in parallel only when they share the same topological depth **after** **2.1** in that manifest; **2.3a–c** may run in parallel with each other once **all** of **2.2a–2.2d** are complete. If unsure, serialize in numeric order (2.2a → 2.2b → …).
 
 > Writing guidance: `{investigator_root}/guides/guide-srs.md`
 > Templates: `{template_path}/srs/`
-> Input: `{output_path}/_work/analysis/`
+> Input: `{output_path}/_work/analysis/` **and** `{output_path}/_work/graph/`
 
 ---
 
@@ -115,6 +116,7 @@ and add the gap to `{output_path}/_work/progress.md` under "Gaps & Assumptions".
 **Task:**
 
 > Using `{output_path}/_work/analysis/00-architecture.md` and `02-apis.md`,
+> **`05-module-dependencies.md`** (for software boundaries and coupling),
 > generate `{output_path}/srs/06-external-interfaces.md`.
 >
 > Sections: (1) User Interfaces — UI standards and conventions found in codebase;

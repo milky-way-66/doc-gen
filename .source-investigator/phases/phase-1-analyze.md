@@ -1,24 +1,33 @@
 # Phase 1 — Source Analysis (Bottom-Up)
 
 **Variables required by the adapter before executing this phase:**
+
 - `{source_path}` — absolute path to source code root
 - `{output_path}` — absolute path to output directory
 - `{investigator_root}` — absolute path to `.source-investigator/`
 
+**Prerequisite:** If `progress.md` contains **Phase 0**, every Phase 0 step must be `[x]` before Step 1.1. Read `{output_path}/_work/graph/manifest.json` first; use GitNexus MCP / mirrored `_work/graph/gitnexus/` and Graphify artifacts under `_work/graph/graphify/` per `{investigator_root}/guides/guide-graph-bootstrap.md`.
+
 **Skip entire phase if** all Phase 1 steps are `[x]` in `{output_path}/_work/progress.md` (unless `--force`).
 
+**Ordering:** Follow `{investigator_root}/document-dependencies.yaml` for which analysis artifacts exist before others. Parallelism among 1.2a–d is allowed only when that manifest’s `parallel_waves` and topological levels agree.
+
 **Principle:** general before specific. Understand the whole system before any single feature. Map relationships before detailing individual items.
+
+**Evidence:** All discovery outputs must cite graph-backed evidence per `{investigator_root}/schemas/graph-evidence.md` when a graph snapshot exists; otherwise `FALLBACK:` + gap in `progress.md`.
 
 ---
 
 ## Step 1.1 — Architecture Overview
 
 **Skip if** step `1.1` is `[x]` in progress.md.
-**Worker type:** Explore
-**Runs:** serial (must complete before step 1.2)
+**Worker type:** Explore (or parallel partials + synthesis per parent skill)
+**Runs:** must complete before step 1.2
 
 **Task:**
 
+> Read `{output_path}/_work/graph/manifest.json` if present. Prefer GitNexus context/clusters/processes and Graphify `GRAPH_REPORT.md` / `graph.json` summaries before undirected repo walks.
+>
 > Read the source code at `{source_path}`. Examine in order:
 > all README files (root and sub-directories), package manifests
 > (package.json, requirements.txt, go.mod, Cargo.toml, pom.xml,
@@ -37,6 +46,7 @@
 >
 > Write findings to `{output_path}/_work/analysis/00-architecture.md`
 > following the schema in `{investigator_root}/schemas/analysis-architecture.md`.
+> Cite graph evidence where applicable.
 
 **After completion:** mark step `1.1` `[x]` in progress.md.
 
@@ -44,15 +54,15 @@
 
 ## Step 1.2 — Discovery
 
-**Skip any sub-step already `[x]`.** Remaining sub-steps run in parallel.
+**Skip any sub-step already `[x]`.** Remaining sub-steps run in parallel when the manifest allows.
 **Worker type:** Explore (one worker per sub-step)
 
 ### Step 1.2a — Screen / UI Discovery
 
 **Task:**
 
-> Read `{output_path}/_work/analysis/00-architecture.md` to understand
-> the project type and directory structure.
+> Read `{output_path}/_work/graph/manifest.json` if present. Read `{output_path}/_work/analysis/00-architecture.md` to understand
+> the project type and directory structure. Use graph clusters to partition search.
 >
 > Search `{source_path}` for all user-facing screens, pages, views, and routes.
 > Look in: `pages/`, `views/`, `screens/`, `app/` (Next.js / Nuxt app-router),
@@ -61,7 +71,7 @@
 >
 > For each screen record: a short ID (S-01, S-02...), name, route/path,
 > area (auth, dashboard, settings, admin, etc.), user role, and one-sentence purpose.
-> Note the routing approach and any route guards.
+> Note the routing approach and any route guards. Include graph evidence per `{investigator_root}/schemas/graph-evidence.md`.
 >
 > Write to `{output_path}/_work/analysis/01-screens.md`
 > following the schema in `{investigator_root}/schemas/analysis-screens.md`.
@@ -70,7 +80,7 @@
 
 **Task:**
 
-> Read `{output_path}/_work/analysis/00-architecture.md`.
+> Read `{output_path}/_work/graph/manifest.json` if present. Read `{output_path}/_work/analysis/00-architecture.md`.
 >
 > Search `{source_path}` for all API endpoints. Look in:
 > `routes/`, `controllers/`, `api/`, `handlers/`, `resolvers/`,
@@ -79,6 +89,7 @@
 > For each endpoint record: method, path, feature area,
 > auth required (yes/no), and one-sentence purpose.
 > Note base URL pattern, auth mechanism, and response format conventions.
+> Include graph evidence per `{investigator_root}/schemas/graph-evidence.md`.
 >
 > Write to `{output_path}/_work/analysis/02-apis.md`
 > following the schema in `{investigator_root}/schemas/analysis-apis.md`.
@@ -87,7 +98,7 @@
 
 **Task:**
 
-> Read `{output_path}/_work/analysis/00-architecture.md`.
+> Read `{output_path}/_work/graph/manifest.json` if present. Read `{output_path}/_work/analysis/00-architecture.md`.
 >
 > Search `{source_path}` for all data models, entities, and schemas.
 > Look in: `models/`, `entities/`, `migrations/`, `prisma/schema.prisma`,
@@ -97,11 +108,38 @@
 > For each entity record: name, table/collection name, one-sentence purpose,
 > key fields (name + type), and relationships. Note the DBMS, ORM,
 > and data patterns (soft delete, audit timestamps, UUID vs integer PKs).
+> Include graph evidence per `{investigator_root}/schemas/graph-evidence.md`.
 >
 > Write to `{output_path}/_work/analysis/03-database.md`
 > following the schema in `{investigator_root}/schemas/analysis-database.md`.
 
-**After all sub-steps complete:** mark each finished step `[x]` in progress.md.
+### Step 1.2d — Worker & Event Discovery
+
+**Task:**
+
+> Read `{output_path}/_work/graph/manifest.json` if present. Read `{output_path}/_work/analysis/00-architecture.md`.
+>
+> Search `{source_path}` for background workers, cron jobs, queues, webhooks, and event subscribers. If none exist, write a short explicit “No workers found” section.
+>
+> Write to `{output_path}/_work/analysis/03b-workers.md` (simple list format is acceptable).
+
+**After all 1.2a–d sub-steps complete:** mark each finished step `[x]` in progress.md.
+
+---
+
+## Step 1.2e — Module / package dependencies
+
+**Skip if** step `1.2e` is `[x]`.
+**Worker type:** Explore (parallel per cluster) + general-purpose (merge)
+**Runs:** after 1.2a–d; before 1.3
+
+**Task:**
+
+> Read `{output_path}/_work/graph/manifest.json`, graph exports, `00-architecture.md`, `01-screens.md`, `02-apis.md`, `03-database.md`.
+> Extract directed module/package edges (imports, calls, extends) with **Evidence** per `{investigator_root}/schemas/analysis-module-dependencies.md`.
+> Optional: one partial file per cluster under `_work/analysis/_partials/`, then merge to `{output_path}/_work/analysis/05-module-dependencies.md`.
+
+**After completion:** mark step `1.2e` `[x]` in progress.md.
 
 ---
 
@@ -109,16 +147,18 @@
 
 **Skip if** step `1.3` is `[x]`.
 **Worker type:** general-purpose
-**Runs:** serial (needs all 1.2 outputs)
+**Runs:** serial (needs 1.2 outputs including `05-module-dependencies.md`)
 
 **Task:**
 
-> Read all four files in `{output_path}/_work/analysis/`:
-> `00-architecture.md`, `01-screens.md`, `02-apis.md`, `03-database.md`.
+> Read files in `{output_path}/_work/analysis/`:
+> `00-architecture.md`, `01-screens.md`, `02-apis.md`, `03-database.md`,
+> `03b-workers.md` (if present), **`05-module-dependencies.md`**.
 >
-> Group screens, APIs, and entities into logical **features** —
+> Group screens, APIs, entities, and workers into logical **features** —
 > business capabilities a user can exercise
 > (e.g., "User Authentication", "Product Catalog", "Order Management").
+> Use **module IDs** from `05-module-dependencies.md` to justify cross-feature technical dependencies where helpful.
 >
 > For each feature define:
 > - **ID**: F-01, F-02... (stable, never reuse)
@@ -127,6 +167,7 @@
 > - **Owned screens**: IDs from 01-screens.md
 > - **Owned APIs**: method + path from 02-apis.md
 > - **Owned entities**: names from 03-database.md
+> - **Owned workers**: names from worker file (if any)
 > - **Depends on**: other feature IDs this feature cannot work without
 >
 > Determine **execution batches** for step 1.4:
@@ -153,7 +194,7 @@
 
 **Track each feature individually** as `1.4 F-XX`. Skip features already `[x]`.
 **Worker type:** Explore (one worker per feature)
-**Runs:** parallel within each batch; batches run in dependency order
+**Runs:** parallel within each batch; batches run in dependency order — must also respect `{investigator_root}/document-dependencies.yaml` for any declared caps.
 
 Read `{output_path}/_work/analysis/04-features.md` to get features and batches.
 Process Batch 1 fully before starting Batch 2, and so on.

@@ -2,11 +2,13 @@
 
 This guide helps sub-agents write high-quality SRS sections from Phase 1 analysis outputs. Read this before generating any SRS section.
 
+**Graph & DAG:** Use `_work/graph/manifest.json` to know which graph snapshot backs this run. Follow [../document-dependencies.yaml](../document-dependencies.yaml) for which SRS files may be produced in parallel (e.g. §3–6 core sections after §1–2 are done).
+
 ---
 
 ## Core Principle
 
-**Document what exists, not what should exist.** Every requirement must trace back to something observed in the source code or analysis files. When you cannot determine something, write:
+**Document what exists, not what should exist.** Every requirement must trace back to something observed in the source code, **graph-backed analysis** (including `graph-evidence` citations in analysis files), or explicit `FALLBACK:` notes. When you cannot determine something, write:
 
 > **TBD** — Could not be determined from source code. Requires stakeholder input.
 
@@ -23,7 +25,7 @@ Add the gap to `_work/progress.md` under "Gaps & Assumptions".
 | 3 — Use Cases | features/f-XX.md (user flows) | 01-screens.md |
 | 4 — System Features | 04-features.md, features/f-XX.md | — |
 | 5 — Data Requirements | 03-database.md, features/f-XX.md (entities) | — |
-| 6 — External Interfaces | 00-architecture.md (integrations), 02-apis.md | — |
+| 6 — External Interfaces | 00-architecture.md (integrations), 02-apis.md, **05-module-dependencies.md** | manifest (graph identity) |
 | 7 — Quality Attributes | 00-architecture.md (patterns), source code signals | — |
 | 8 — Internationalization | Source code search (i18n libs, locale config) | — |
 | 9 — Other Requirements | .env config, license files, logging setup | — |

@@ -1,0 +1,263 @@
+# Machine-defined document / artifact DAG for gen-doc
+# Orchestrator: topological order; parallelize only nodes at the same depth
+# that the skill marks as parallel-safe. When manifest and progress disagree,
+# this file wins for prerequisite checks.
+
+version: 1
+
+# When --graph-backend gitnexus|graphify, treat the unused Phase 0 node as
+# satisfied for ordering (stub + gap). Full graph still needs manifest.json.
+
+backend_skip_rules:
+  gitnexus: phase0.graphify
+  graphify: phase0.gitnexus
+
+nodes:
+  # --- Phase 0 (graph snapshot) ---
+  - id: phase0.gitnexus
+    progress: "0.1"
+    description: GitNexus analyze + mirror under _work/graph/gitnexus
+    requires: []
+
+  - id: phase0.graphify
+    progress: "0.2"
+    description: Graphify build/export under _work/graph/graphify
+    requires: []
+
+  - id: phase0.manifest
+    progress: "0.3"
+    description: _work/graph/manifest.json graph identity
+    outputs:
+      - _work/graph/manifest.json
+    requires:
+      - phase0.gitnexus
+      - phase0.graphify
+
+  # --- Phase 1 (analysis views) ---
+  - id: analysis.architecture
+    progress: "1.1"
+    outputs:
+      - _work/analysis/00-architecture.md
+    requires:
+      - phase0.manifest
+
+  - id: analysis.screens
+    progress: "1.2a"
+    outputs:
+      - _work/analysis/01-screens.md
+    requires:
+      - phase0.manifest
+      - analysis.architecture
+
+  - id: analysis.apis
+    progress: "1.2b"
+    outputs:
+      - _work/analysis/02-apis.md
+    requires:
+      - phase0.manifest
+      - analysis.architecture
+
+  - id: analysis.database
+    progress: "1.2c"
+    outputs:
+      - _work/analysis/03-database.md
+    requires:
+      - phase0.manifest
+      - analysis.architecture
+
+  - id: analysis.workers
+    progress: "1.2d"
+    outputs:
+      - _work/analysis/03b-workers.md
+    requires:
+      - phase0.manifest
+      - analysis.architecture
+
+  - id: analysis.module_dependencies
+    progress: "1.2e"
+    outputs:
+      - _work/analysis/05-module-dependencies.md
+    requires:
+      - phase0.manifest
+      - analysis.architecture
+      - analysis.screens
+      - analysis.apis
+      - analysis.database
+
+  - id: analysis.features
+    progress: "1.3"
+    outputs:
+      - _work/analysis/04-features.md
+      - _work/dependency-graph.md
+    requires:
+      - analysis.architecture
+      - analysis.screens
+      - analysis.apis
+      - analysis.database
+      - analysis.module_dependencies
+
+  - id: analysis.feature_dive
+    progress: "1.4"
+    outputs:
+      - _work/analysis/features/
+    requires:
+      - analysis.features
+
+  # --- Phase 2 (SRS) ---
+  - id: srs.foundation
+    progress: "2.1"
+    outputs:
+      - srs/01-introduction.md
+      - srs/02-overall-description.md
+    requires:
+      - phase0.manifest
+      - analysis.architecture
+      - analysis.features
+
+  - id: srs.use_cases
+    progress: "2.2a"
+    outputs:
+      - srs/03-use-cases.md
+      - srs/03-use-cases/
+    requires:
+      - srs.foundation
+      - analysis.feature_dive
+      - analysis.screens
+
+  - id: srs.system_features
+    progress: "2.2b"
+    outputs:
+      - srs/04-system-features.md
+      - srs/04-system-features/
+    requires:
+      - srs.foundation
+      - analysis.feature_dive
+      - analysis.features
+
+  - id: srs.data_requirements
+    progress: "2.2c"
+    outputs:
+      - srs/05-data-requirements.md
+    requires:
+      - srs.foundation
+      - analysis.feature_dive
+      - analysis.database
+
+  - id: srs.external_interfaces
+    progress: "2.2d"
+    outputs:
+      - srs/06-external-interfaces.md
+    requires:
+      - srs.foundation
+      - analysis.apis
+      - analysis.architecture
+      - analysis.module_dependencies
+
+  - id: srs.quality
+    progress: "2.3a"
+    outputs:
+      - srs/07-quality-attributes.md
+    requires:
+      - srs.foundation
+      - srs.use_cases
+      - srs.system_features
+      - srs.data_requirements
+      - srs.external_interfaces
+
+  - id: srs.i18n
+    progress: "2.3b"
+    outputs:
+      - srs/08-internationalization.md
+    requires:
+      - srs.foundation
+      - srs.use_cases
+      - srs.system_features
+      - srs.data_requirements
+      - srs.external_interfaces
+
+  - id: srs.other
+    progress: "2.3c"
+    outputs:
+      - srs/09-other-requirements.md
+    requires:
+      - srs.foundation
+      - srs.use_cases
+      - srs.system_features
+      - srs.data_requirements
+      - srs.external_interfaces
+
+  # --- Phase 3 (basic design) ---
+  - id: design.screen_map
+    progress: "3.1a"
+    outputs:
+      - basic-design/screen-map.md
+    requires:
+      - srs.use_cases
+      - srs.external_interfaces
+      - analysis.screens
+
+  - id: design.api_list
+    progress: "3.1b"
+    outputs:
+      - basic-design/api-list.md
+    requires:
+      - srs.system_features
+      - srs.external_interfaces
+      - analysis.apis
+
+  - id: design.screen_details
+    progress: "3.2a"
+    outputs:
+      - basic-design/screens/
+    requires:
+      - design.screen_map
+      - srs.use_cases
+
+  - id: design.api_details
+    progress: "3.2b"
+    outputs:
+      - basic-design/apis/
+    requires:
+      - design.api_list
+      - srs.system_features
+
+  - id: design.database
+    progress: "3.3"
+    outputs:
+      - basic-design/db-design.md
+    requires:
+      - srs.data_requirements
+      - analysis.database
+
+  - id: design.index
+    progress: "3.4"
+    outputs:
+      - basic-design/index.md
+    requires:
+      - design.screen_map
+      - design.api_list
+      - design.screen_details
+      - design.api_details
+      - design.database
+
+# Parallel waves hint: nodes sharing the same minimum depth after topo sort
+# may run in parallel if the skill says so. Example: 1.2a–1.2d share depth after 1.1.
+parallel_waves:
+  after_progress:
+    "1.1":
+      - analysis.screens
+      - analysis.apis
+      - analysis.database
+      - analysis.workers
+    "2.1":
+      - srs.use_cases
+      - srs.system_features
+      - srs.data_requirements
+      - srs.external_interfaces
+    "2.2d":
+      - srs.quality
+      - srs.i18n
+      - srs.other
+    "3.1a":
+      - design.screen_map
+      - design.api_list

@@ -2,14 +2,21 @@
 
 Rules and tips for Phase 1 — Source Analysis. Sub-agents must read this before writing any output file.
 
+**Graph-first:** Read `_work/graph/manifest.json` before deep discovery. Prefer GitNexus (MCP or mirrored index) and Graphify exports over blind full-repo grep. Cite evidence per [../schemas/graph-evidence.md](../schemas/graph-evidence.md).
+
+**Document DAG:** Artifact order and allowed parallel waves are defined in [../document-dependencies.yaml](../document-dependencies.yaml); follow it when scheduling sub-agents.
+
 For the exact format to write, see the schema files:
 
 | Step | Output File | Schema |
 |------|------------|--------|
+| 0.x | `_work/graph/*` | [../guides/guide-graph-bootstrap.md](../guides/guide-graph-bootstrap.md) |
 | 1.1 | `_work/analysis/00-architecture.md` | [../schemas/analysis-architecture.md](../schemas/analysis-architecture.md) |
 | 1.2a | `_work/analysis/01-screens.md` | [../schemas/analysis-screens.md](../schemas/analysis-screens.md) |
 | 1.2b | `_work/analysis/02-apis.md` | [../schemas/analysis-apis.md](../schemas/analysis-apis.md) |
 | 1.2c | `_work/analysis/03-database.md` | [../schemas/analysis-database.md](../schemas/analysis-database.md) |
+| 1.2d | `_work/analysis/03b-workers.md` | (simple list; optional) |
+| 1.2e | `_work/analysis/05-module-dependencies.md` | [../schemas/analysis-module-dependencies.md](../schemas/analysis-module-dependencies.md) |
 | 1.3 | `_work/analysis/04-features.md` | [../schemas/analysis-features.md](../schemas/analysis-features.md) |
 | 1.4 | `_work/analysis/features/f-XX-slug.md` | [../schemas/analysis-feature-detail.md](../schemas/analysis-feature-detail.md) |
 
@@ -30,9 +37,13 @@ For the exact format to write, see the schema files:
 Follow this order strictly — each step depends on the previous:
 
 ```
+0.x Graph snapshot (GitNexus + Graphify) → manifest.json
+      ↓
 1.1 Architecture Overview        ← understand the whole system first
       ↓
-1.2 Discovery (parallel)         ← enumerate all screens, APIs, entities
+1.2 Discovery (parallel)         ← enumerate screens, APIs, entities, workers
+      ↓
+1.2e Module dependencies           ← graph-evidenced package/module edges
       ↓
 1.3 Feature Grouping + Dep Graph ← group into features, map dependencies
       ↓

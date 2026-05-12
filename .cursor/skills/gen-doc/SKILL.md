@@ -1,13 +1,13 @@
 ---
 name: gen-doc
 description: Automatically determines if a project is modern or legacy, and then generates technical documentation by delegating to the appropriate sub-skill.
-argument-hint: <source_path> [--output <path>] [--force]
+argument-hint: <source_path> [--output <path>] [--force] [--skip-graph-refresh] [--graph-backend both|gitnexus|graphify]
 effort: low
 ---
 
 # gen-doc — Technical Documentation Generator (Router)
 
-This is a router skill. It determines the architecture of the project and then delegates to the appropriate specialized skill.
+This is a router skill. It determines the architecture of the project and then delegates to the appropriate specialized skill. The child skill runs a **graph-first** pipeline (Phase 0: GitNexus + Graphify snapshot → Phases 1–3) and honors `document-dependencies.yaml` for ordering; pass **all** received flags through unchanged (e.g. `--skip-graph-refresh`, `--graph-backend`).
 
 ## Step 1 — Parse Arguments & Architecture Analysis
 
@@ -26,8 +26,8 @@ Based on your determination, immediately pivot and invoke the appropriate specia
 
 **If MODERN:**
 Say: *"I have detected a modern architecture. I will now run the modern documentation generator."*
-Then execute the skill: `/gen-doc-modern <source_path> [--output <path>] [--force]`
+Then execute the skill: `/gen-doc-modern` with the **same** `$ARGUMENTS` string you received (preserve `--output`, `--force`, `--skip-graph-refresh`, `--graph-backend`, etc.).
 
 **If LEGACY:**
 Say: *"I have detected a legacy monolithic architecture. I will now run the specialized legacy documentation generator."*
-Then execute the skill: `/gen-doc-legacy <source_path> [--output <path>] [--force]`
+Then execute the skill: `/gen-doc-legacy` with the **same** `$ARGUMENTS` string you received.

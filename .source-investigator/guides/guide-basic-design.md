@@ -2,6 +2,8 @@
 
 This guide helps sub-agents write high-quality Basic Design documents from SRS and analysis outputs. Read this before generating any Basic Design document.
 
+**DAG:** Parallel work (e.g. screen map vs API list) must match [../document-dependencies.yaml](../document-dependencies.yaml). **Graph identity:** Record `_work/graph/manifest.json` commit SHA in the doc index or overview when useful for audit trails.
+
 ---
 
 ## Core Principle

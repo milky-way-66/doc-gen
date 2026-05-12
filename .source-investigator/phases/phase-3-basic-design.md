@@ -7,11 +7,13 @@
 - `{template_path}` — absolute path to `.source-investigator/templates/`
 
 **Skip entire phase if** all Phase 3 steps are `[x]` in progress.md (unless `--force`).
-**Prerequisite:** All Phase 2 steps must be `[x]`. If not, stop and tell the user to run SRS generation first.
+**Prerequisite:** All Phase 2 steps must be `[x]`. If progress.md includes Phase 0, Phase 0 should normally already be `[x]` if Phase 2 completed via the standard pipeline; if not, stop and instruct a coherent `analyze` / `srs` rerun.
+
+**Document DAG:** Load `{investigator_root}/document-dependencies.yaml`. Steps **3.1a** and **3.1b** may run in parallel per manifest. **3.2** detail batches must respect feature grouping and manifest ordering. Cap parallel workers as the parent skill specifies (e.g. max 5 per wave).
 
 > Writing guidance: `{investigator_root}/guides/guide-basic-design.md`
 > Templates: `{template_path}/basic_design/`
-> Input: `{output_path}/srs/` + `{output_path}/_work/analysis/`
+> Input: `{output_path}/srs/` + `{output_path}/_work/analysis/` + `{output_path}/_work/graph/manifest.json` (for traceability to graph identity)
 
 ---
 
